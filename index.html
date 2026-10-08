@@ -1,1 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Daily Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>My Daily Tracker</h1>
+    <p id="todayDate"></p>
+  </header>
 
+  <nav>
+    <button data-tab="today" class="active">Today</button>
+    <button data-tab="week">Week</button>
+    <button data-tab="month">Month</button>
+    <button data-tab="backup">Backup</button>
+  </nav>
+
+  <main>
+    <!-- TODAY -->
+    <section id="today">
+      <div class="card">
+        <h2>Prayers <span id="prayerCount"></span></h2>
+        <div id="prayers"></div>
+      </div>
+
+      <div class="card">
+        <h2>Main tasks today</h2>
+        <div class="row">
+          <input id="taskInput" placeholder="Add a main task">
+          <button id="addTask">Add</button>
+        </div>
+        <ul id="taskList"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Daily notes</h2>
+        <textarea id="notes" rows="6" placeholder="Type here, or tap the mic and speak..."></textarea>
+        <div class="row">
+          <select id="lang">
+            <option value="en-IN">English (India)</option>
+            <option value="en-US">English (US)</option>
+            <option value="hi-IN">Hindi</option>
+            <option value="ur-PK">Urdu</option>
+            <option value="ar-SA">Arabic</option>
+          </select>
+          <button id="mic">🎤 Start voice note</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- WEEK -->
+    <section id="week" class="hidden">
+      <div class="card">
+        <h2>This week's goals</h2>
+        <div class="row">
+          <input id="weekInput" placeholder="Add a weekly goal">
+          <button id="addWeek">Add</button>
+        </div>
+        <ul id="weekGoals"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Weekly improvement</h2>
+        <p id="weekStats" class="stats"></p>
+        <label>How was this week?</label>
+        <select id="rating">
+          <option value="">Choose...</option>
+          <option value="1">1 - Weak</option>
+          <option value="2">2 - Below average</option>
+          <option value="3">3 - Okay</option>
+          <option value="4">4 - Good</option>
+          <option value="5">5 - Excellent</option>
+        </select>
+        <label>What improved?</label>
+        <textarea id="improved" rows="3"></textarea>
+        <label>What must I fix next week?</label>
+        <textarea id="fix" rows="3"></textarea>
+      </div>
+    </section>
+
+    <!-- MONTH -->
+    <section id="month" class="hidden">
+      <div class="card">
+        <h2>This month's goals</h2>
+        <div class="row">
+          <input id="monthInput" placeholder="Add a monthly goal">
+          <button id="addMonth">Add</button>
+        </div>
+        <ul id="monthGoals"></ul>
+      </div>
+      <div class="card">
+        <h2>What I need to fix this month</h2>
+        <textarea id="monthFix" rows="5"></textarea>
+      </div>
+    </section>
+
+    <!-- BACKUP -->
+    <section id="backup" class="hidden">
+      <div class="card">
+        <h2>Backup your data</h2>
+        <p>Download a backup file regularly, for example every Friday.</p>
+        <button id="export">Download backup</button>
+        <label>Restore from a backup file:</label>
+        <input type="file" id="import" accept=".json">
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
