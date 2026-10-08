@@ -1,26 +1,544 @@
-* { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, sans-serif; background: #f4f6f8; color: #1f2933; }
-header { background: #0f766e; color: white; padding: 16px; text-align: center; }
-header h1 { margin: 0; font-size: 1.4rem; }
-header p { margin: 4px 0 0; opacity: .9; }
-nav { display: flex; background: white; position: sticky; top: 0; box-shadow: 0 1px 4px #0002; }
-nav button { flex: 1; padding: 12px; border: none; background: none; font-size: 1rem; cursor: pointer; }
-nav button.active { border-bottom: 3px solid #0f766e; color: #0f766e; font-weight: 600; }
-main { max-width: 640px; margin: 0 auto; padding: 12px; }
-.card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px #0001; }
-.card h2 { margin: 0 0 10px; font-size: 1.1rem; }
-.row { display: flex; gap: 8px; margin-top: 8px; }
-input[type=text], input:not([type]), textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd2d9; border-radius: 8px; font-size: 1rem; font-family: inherit; }
-button { background: #0f766e; color: white; border: none; border-radius: 8px; padding: 10px 14px; font-size: 1rem; cursor: pointer; }
-nav button { color: #1f2933; background: none; border-radius: 0; }
-nav button.active { color: #0f766e; }
-ul { list-style: none; padding: 0; margin: 10px 0 0; }
-li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eef0f2; }
-li span { flex: 1; }
-li button { background: none; color: #b42318; padding: 4px 8px; }
-.strike { text-decoration: line-through; color: #7b8794; }
-.chip { display: inline-block; padding: 10px 14px; margin: 4px 4px 4px 0; border: 1px solid #cbd2d9; border-radius: 999px; cursor: pointer; }
-.chip.done { background: #d1fae5; border-color: #0f766e; }
-.stats { font-weight: 600; color: #0f766e; }
-label { display: block; margin: 12px 0 4px; font-weight: 600; }
-.hidden { display: none; }
+/* =========================================================
+   MY DAILY TRACKER — SUPER DARK AESTHETIC THEME
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #050505;
+  --bg-soft: #09090b;
+  --card: rgba(17, 17, 20, 0.82);
+  --card-solid: #111114;
+  --card-hover: #16161a;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.16);
+
+  --text: #f5f5f5;
+  --text-soft: #a1a1aa;
+  --text-muted: #71717a;
+
+  --accent: #8b5cf6;
+  --accent-light: #a78bfa;
+  --accent-dark: #6d28d9;
+
+  --success: #22c55e;
+  --danger: #ef4444;
+
+  --radius: 18px;
+}
+
+/* =========================================================
+   BODY
+   ========================================================= */
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  background:
+    radial-gradient(
+      circle at 50% -10%,
+      rgba(139, 92, 246, 0.16),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 90% 30%,
+      rgba(109, 40, 217, 0.08),
+      transparent 30%
+    ),
+    #050505;
+
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+header {
+  position: relative;
+  padding: 42px 20px 32px;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15, 15, 18, 0.96),
+      rgba(5, 5, 5, 0.92)
+    );
+
+  border-bottom: 1px solid var(--border);
+
+  overflow: hidden;
+}
+
+header::before {
+  content: "";
+  position: absolute;
+
+  width: 280px;
+  height: 280px;
+
+  left: 50%;
+  top: -210px;
+
+  transform: translateX(-50%);
+
+  background: rgba(139, 92, 246, 0.22);
+
+  filter: blur(80px);
+
+  pointer-events: none;
+}
+
+header h1 {
+  position: relative;
+
+  margin: 0;
+
+  font-size: clamp(1.7rem, 5vw, 2.5rem);
+  font-weight: 800;
+
+  letter-spacing: -0.04em;
+
+  background: linear-gradient(
+    135deg,
+    #ffffff 20%,
+    #c4b5fd 70%,
+    #8b5cf6
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  color: transparent;
+}
+
+header p {
+  position: relative;
+
+  margin: 8px 0 0;
+
+  color: var(--text-muted);
+
+  font-size: 0.9rem;
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  display: flex;
+
+  max-width: 680px;
+
+  margin: 18px auto 0;
+
+  padding: 6px;
+
+  background: rgba(15, 15, 18, 0.86);
+
+  border: 1px solid var(--border);
+
+  border-radius: 16px;
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+nav button {
+  flex: 1;
+
+  padding: 11px 8px;
+
+  border: none;
+  border-radius: 11px;
+
+  background: transparent;
+
+  color: var(--text-muted);
+
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+nav button:hover {
+  color: #ffffff;
+
+  background: rgba(255, 255, 255, 0.05);
+}
+
+nav button:active {
+  transform: scale(0.97);
+}
+
+nav button.active {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(139, 92, 246, 0.95),
+      rgba(109, 40, 217, 0.85)
+    );
+
+  box-shadow:
+    0 5px 20px rgba(139, 92, 246, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+main {
+  width: min(680px, calc(100% - 24px));
+
+  margin: 0 auto;
+
+  padding: 24px 0 50px;
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.card {
+  position: relative;
+
+  margin-bottom: 16px;
+
+  padding: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(23, 23, 27, 0.9),
+      rgba(11, 11, 14, 0.94)
+    );
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius);
+
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+
+.card:hover {
+  border-color: var(--border-hover);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(27, 27, 32, 0.94),
+      rgba(13, 13, 16, 0.96)
+    );
+
+  transform: translateY(-2px);
+}
+
+.card h2 {
+  margin: 0 0 16px;
+
+  color: #ffffff;
+
+  font-size: 1.05rem;
+  font-weight: 700;
+
+  letter-spacing: -0.02em;
+}
+
+.card h2::before {
+  content: "";
+
+  display: inline-block;
+
+  width: 5px;
+  height: 18px;
+
+  margin-right: 9px;
+
+  vertical-align: -3px;
+
+  background: var(--accent);
+
+  border-radius: 10px;
+
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.7);
+}
+
+/* =========================================================
+   ROW
+   ========================================================= */
+
+.row {
+  display: flex;
+
+  gap: 9px;
+
+  margin-top: 10px;
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+input[type="text"],
+input:not([type]),
+textarea,
+select {
+  width: 100%;
+
+  padding: 12px 13px;
+
+  color: #f4f4f5;
+
+  background: #09090b;
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+
+  border-radius: 11px;
+
+  outline: none;
+
+  font-family: inherit;
+  font-size: 0.95rem;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #52525b;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(139, 92, 246, 0.8);
+
+  background: #0c0c0f;
+
+  box-shadow:
+    0 0 0 3px rgba(139, 92, 246, 0.1),
+    0 0 20px rgba(139, 92, 246, 0.08);
+}
+
+textarea {
+  resize: vertical;
+
+  min-height: 110px;
+}
+
+select {
+  cursor: pointer;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+button {
+  border: none;
+
+  border-radius: 11px;
+
+  padding: 11px 16px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--accent),
+      var(--accent-dark)
+    );
+
+  font-family: inherit;
+
+  font-size: 0.9rem;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  box-shadow:
+    0 6px 18px rgba(109, 40, 217, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+button:hover {
+  filter: brightness(1.12);
+
+  box-shadow:
+    0 8px 24px rgba(139, 92, 246, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* =========================================================
+   LISTS / TASKS
+   ========================================================= */
+
+ul {
+  list-style: none;
+
+  margin: 12px 0 0;
+
+  padding: 0;
+}
+
+li {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 12px 4px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+
+  color: #e4e4e7;
+
+  transition:
+    background 0.2s ease,
+    padding 0.2s ease;
+}
+
+li:hover {
+  padding-left: 8px;
+  padding-right: 8px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  border-radius: 9px;
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+li span {
+  flex: 1;
+
+  font-size: 0.95rem;
+}
+
+li button {
+  padding: 5px 8px;
+
+  color: #71717a;
+
+  background: transparent;
+
+  box-shadow: none;
+
+  font-size: 0.9rem;
+}
+
+li button:hover {
+  color: var(--danger);
+
+  background: rgba(239, 68, 68, 0.08);
+
+  box-shadow: none;
+
+  transform: none;
+}
+
+/* =========================================================
+   CHECKBOXES
+   ========================================================= */
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+
+  accent-color: var(--accent);
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   COMPLETED TASK
+   ========================================================= */
+
+.strike {
+  color: #52525b !important;
+
+  text-decoration: line-through;
+
+  text-decoration-color: #71717a;
+}
+
+/* =========================================================
+   PRAYER CHIPS
+   ========================================================= */
+
+.chip {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 
