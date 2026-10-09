@@ -1,115 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Daily Tracker</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0612">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Yawm</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>My Daily Tracker</h1>
-    <p id="todayDate"></p>
-  </header>
+<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#d946ef"/><stop offset="1" stop-color="#f43f5e"/></linearGradient></defs></svg>
+<div class="aurora"></div>
 
-  <nav>
-    <button data-tab="today" class="active">Today</button>
-    <button data-tab="week">Week</button>
-    <button data-tab="month">Month</button>
-    <button data-tab="backup">Backup</button>
-  </nav>
+<header>
+  <div><h1>Yawm <span class="ar">يوم</span></h1><p id="date"></p></div>
+  <div class="streak" id="streak"></div>
+</header>
 
-  <main>
-    <!-- TODAY -->
-    <section id="today">
-      <div class="card">
-        <h2>Prayers <span id="prayerCount"></span></h2>
-        <div id="prayers"></div>
-      </div>
+<main>
+<!-- TODAY -->
+<section id="today" class="page">
+  <div class="card quote">
+    <p class="qar" id="qAr"></p><p id="qEn"></p><small id="qRef"></small>
+    <button class="ghost sm" id="qNext">Next quote ↻</button>
+  </div>
 
-      <div class="card">
-        <h2>Main tasks today</h2>
-        <div class="row">
-          <input id="taskInput" placeholder="Add a main task">
-          <button id="addTask">Add</button>
-        </div>
-        <ul id="taskList"></ul>
-      </div>
+  <div class="card score">
+    <div class="ringbox"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle class="bar" id="ring" cx="60" cy="60" r="52"/></svg>
+      <div class="num"><b id="pct">0</b><small>%</small></div></div>
+    <div class="side"><h2>Today's progress</h2><p id="nextUp" class="mut"></p></div>
+  </div>
 
-      <div class="card">
-        <h2>Daily notes</h2>
-        <textarea id="notes" rows="6" placeholder="Type here, or tap the mic and speak..."></textarea>
-        <div class="row">
-          <select id="lang">
-            <option value="en-IN">English (India)</option>
-            <option value="en-US">English (US)</option>
-            <option value="hi-IN">Hindi</option>
-            <option value="ur-PK">Urdu</option>
-            <option value="ar-SA">Arabic</option>
-          </select>
-          <button id="mic">🎤 Start voice note</button>
-        </div>
-      </div>
-    </section>
+  <div class="card"><h2>Prayers <span id="prayerCount" class="mut"></span></h2><div id="prayers"></div></div>
 
-    <!-- WEEK -->
-    <section id="week" class="hidden">
-      <div class="card">
-        <h2>This week's goals</h2>
-        <div class="row">
-          <input id="weekInput" placeholder="Add a weekly goal">
-          <button id="addWeek">Add</button>
-        </div>
-        <ul id="weekGoals"></ul>
-      </div>
+  <div class="card"><h2>Habits</h2>
+    <ul id="habitList"></ul>
+    <div class="addrow">
+      <div class="vw"><input type="text" id="habitName" data-add="addHabit" placeholder="New habit (voice or type)" autocomplete="off"></div>
+      <input type="time" id="habitTime" aria-label="Time">
+      <button class="pri" id="addHabit">Add</button>
+    </div>
+  </div>
 
-      <div class="card">
-        <h2>Weekly improvement</h2>
-        <p id="weekStats" class="stats"></p>
-        <label>How was this week?</label>
-        <select id="rating">
-          <option value="">Choose...</option>
-          <option value="1">1 - Weak</option>
-          <option value="2">2 - Below average</option>
-          <option value="3">3 - Okay</option>
-          <option value="4">4 - Good</option>
-          <option value="5">5 - Excellent</option>
-        </select>
-        <label>What improved?</label>
-        <textarea id="improved" rows="3"></textarea>
-        <label>What must I fix next week?</label>
-        <textarea id="fix" rows="3"></textarea>
-      </div>
-    </section>
+  <div class="card"><h2>Main tasks</h2>
+    <div class="addrow"><div class="vw"><input type="text" id="taskInput" data-add="addTask" placeholder="Add a task (voice or type)" autocomplete="off"></div><button class="pri" id="addTask">Add</button></div>
+    <ul id="taskList"></ul>
+  </div>
 
-    <!-- MONTH -->
-    <section id="month" class="hidden">
-      <div class="card">
-        <h2>This month's goals</h2>
-        <div class="row">
-          <input id="monthInput" placeholder="Add a monthly goal">
-          <button id="addMonth">Add</button>
-        </div>
-        <ul id="monthGoals"></ul>
-      </div>
-      <div class="card">
-        <h2>What I need to fix this month</h2>
-        <textarea id="monthFix" rows="5"></textarea>
-      </div>
-    </section>
+  <div class="card"><h2>Check-in</h2>
+    <div class="moods" id="moods"><button data-m="1">😞</button><button data-m="2">🙁</button><button data-m="3">😐</button><button data-m="4">🙂</button><button data-m="5">😄</button></div>
+    <div class="water"><span>Water glasses</span><button class="ghost sm" id="wMinus">−</button><b id="water">0</b><button class="ghost sm" id="wPlus">+</button></div>
+  </div>
 
-    <!-- BACKUP -->
-    <section id="backup" class="hidden">
-      <div class="card">
-        <h2>Backup your data</h2>
-        <p>Download a backup file regularly, for example every Friday.</p>
-        <button id="export">Download backup</button>
-        <label>Restore from a backup file:</label>
-        <input type="file" id="import" accept=".json">
-      </div>
-    </section>
-  </main>
+  <div class="card"><h2>Daily notes</h2>
+    <div class="vw"><textarea id="notes" rows="5" placeholder="Speak or type your thoughts..."></textarea></div>
+  </div>
+</section>
 
-  <script src="app.js"></script>
+<!-- WEEK -->
+<section id="week" class="page hidden">
+  <div class="card"><h2>This week</h2><div class="bars" id="weekBars"></div><p id="weekStats" class="mut"></p></div>
+  <div class="card"><h2>Weekly goals</h2>
+    <div class="addrow"><div class="vw"><input type="text" id="weekInput" data-add="addWeek" placeholder="Add a weekly goal" autocomplete="off"></div><button class="pri" id="addWeek">Add</button></div>
+    <ul id="weekGoals"></ul>
+  </div>
+  <div class="card"><h2>Weekly improvement</h2>
+    <label>How was this week?</label>
+    <select id="rating"><option value="">Choose...</option><option value="1">1 - Weak</option><option value="2">2 - Below average</option><option value="3">3 - Okay</option><option value="4">4 - Good</option><option value="5">5 - Excellent</option></select>
+    <label>What improved?</label><div class="vw"><textarea id="improved" rows="3"></textarea></div>
+    <label>What must I fix next week?</label><div class="vw"><textarea id="fix" rows="3"></textarea></div>
+  </div>
+</section>
+
+<!-- MONTH -->
+<section id="month" class="page hidden">
+  <div class="card"><h2>Monthly goals</h2>
+    <div class="addrow"><div class="vw"><input type="text" id="monthInput" data-add="addMonth" placeholder="Add a monthly goal" autocomplete="off"></div><button class="pri" id="addMonth">Add</button></div>
+    <ul id="monthGoals"></ul><p id="monthStats" class="mut"></p>
+  </div>
+  <div class="card"><h2>What I need to fix this month</h2><div class="vw"><textarea id="monthFix" rows="5"></textarea></div></div>
+</section>
+
+<!-- FOCUS -->
+<section id="focus" class="page hidden">
+  <div class="card tc">
+    <div class="modes"><button data-m="focus">Focus 25</button><button data-m="short">Break 5</button><button data-m="long">Long 15</button></div>
+    <div class="ringbox big"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle class="bar" id="tRing" cx="60" cy="60" r="52"/></svg>
+      <div class="num"><b id="tTime">25:00</b><small id="tLabel"></small></div></div>
+    <div class="ctl"><button class="ghost" id="tReset">Reset</button><button class="pri" id="tGo">Start</button><button class="ghost" id="tSkip">Skip</button></div>
+    <p id="fStats" class="mut"></p>
+  </div>
+  <div class="card"><h2>Urge to scroll?</h2><p class="mut">Don't open the app yet. Give yourself 5 minutes first.</p><button class="pri" id="urge">Start 5-minute reset</button></div>
+</section>
+
+<!-- MORE -->
+<section id="more" class="page hidden">
+  <div class="card"><h2>Voice language</h2>
+    <select id="lang"><option value="en-IN">English (India)</option><option value="en-US">English (US)</option><option value="hi-IN">Hindi</option><option value="ur-PK">Urdu</option><option value="ar-SA">Arabic</option></select>
+  </div>
+  <div class="card"><h2>Prayer times</h2><p class="mut">Set your times so Yawm can show what is next.</p><div id="ptimes"></div></div>
+  <div class="card"><h2>Backup</h2><p class="mut">Download a backup every Friday. Data is stored on this device only.</p>
+    <button class="pri" id="export">Download backup</button>
+    <label>Restore from a backup file</label><input type="file" id="import" accept=".json">
+  </div>
+  <p class="mut small">Quran verses are translations of the meaning. Please verify with your trusted source.</p>
+</section>
+</main>
+
+<nav>
+  <button data-tab="today" class="on"><i>☀</i>Today</button>
+  <button data-tab="week"><i>◎</i>Week</button>
+  <button data-tab="month"><i>▦</i>Month</button>
+  <button data-tab="focus"><i>⏱</i>Focus</button>
+  <button data-tab="more"><i>⚙</i>More</button>
+</nav>
+<div id="toast"></div>
+<script src="app.js"></script>
 </body>
 </html>
