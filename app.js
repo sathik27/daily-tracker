@@ -30,21 +30,25 @@ const pad = n => String(n).padStart(2, "0");
 // ================= DATA =================
 function fresh() { return normalize({}); }
 function normalize(o) {
-  const d = Object.assign({ days: {}, weeks: {}, months: {}, habits: null, settings: {} }, o || {});
+  const d = Object.assign({ v: 2, days: {}, weeks: {}, months: {}, habits: null, settings: {}, sleep: {}, money: [] }, o || {});
+  d.v = 2;
+  if (!d.sleep || typeof d.sleep !== "object" || Array.isArray(d.sleep)) d.sleep = {};
+  if (!Array.isArray(d.money)) d.money = [];
   if (!Array.isArray(d.habits)) d.habits = JSON.parse(JSON.stringify(SEED));
-  d.settings = Object.assign({ lang: "en-IN", times: {} }, d.settings);
+  d.settings = Object.assign({ lang: "en-IN", times: {}, currency: "₹" }, d.settings);
   if (!d.settings.times) d.settings.times = {};
   return d;
 }
 function load() {
   const raw = localStorage.getItem(KEY);
-  try { return normalize(JSON.parse(raw)); }
+  try { const p = JSON.parse(raw); if (p && !p.v) { try { localStorage.setItem(KEY + "_pre_v2", raw); } catch (e) {} } return normalize(p); }
   catch (e) { try { if (raw) localStorage.setItem(KEY + "_corrupt", raw); } catch (e2) {} return fresh(); }
 }
 let data = load();
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(data)); }
-  catch (e) { toast("Could not save. Download a backup in More."); }
+  try { localStorage.setItem(KEY, JSON.stringify(data)); localStorage.setItem("yawmUpdated", Date.now()); const s = $("saveState"); if (s) s.textContent = "Saved " + new Date().toLocaleTimeString(); }
+  catch (e) { toast("Could not save. Download a backup in More."); const s = $("saveState"); if (s) s.textContent = "NOT saved. Download a backup."; }
+  if (window.yawmCloudPush) window.yawmCloudPush();
 }
 function toast(m) {
   const t = $("toast"); t.textContent = m; t.classList.add("show");
@@ -180,12 +184,12 @@ function renderMonth() {
 
 // ================= RENDER ALL =================
 function render() {
-  $("date").textContent = new Date().toDateString();
+  const hr = new Date().getHours(); $("date").textContent = (hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening") + " · " + new Date().toDateString();
   const d = dayOf(today);
   renderPrayers(d); renderHabits(d); renderList("taskList", d.tasks); bindText("notes", d, "notes");
   $("water").textContent = d.water;
   document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", +b.dataset.m === d.mood));
-  renderNext(d); renderScore(); renderQuote(); renderWeek(); renderMonth(); drawTimer();
+  renderNext(d); renderScore(); renderQuote(); renderWeek(); renderMonth(); drawTimer(); renderTrack(); renderGlance(d);
 }
 
 // ================= BUTTONS =================
@@ -226,8 +230,7 @@ $("import").onchange = e => {
   const f = e.target.files[0]; if (!f) return;
   const r = new FileReader();
   r.onload = () => {
-    try { data = normalize(JSON.parse(r.result)); save(); render(); toast("Backup restored"); }
-    catch (err) { toast("That file is not a valid backup"); }
+    restore(r.result); e.target.value = "";
   };
   r.readAsText(f);
 };
@@ -316,5 +319,104 @@ document.addEventListener("visibilitychange", () => {
 });
 window.addEventListener("pagehide", save);
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+
+// ================= SAFE RESTORE =================
+function mergeData(cur, inc) {
+  const o = JSON.parse(JSON.stringify(cur));
+  ["days", "weeks", "months", "sleep"].forEach(k => { o[k] = Object.assign({}, inc[k] || {}, cur[k] || {}); });
+  const hid = new Set(o.habits.map(h => h.id)); (inc.habits || []).forEach(h => { if (!hid.has(h.id)) o.habits.push(h); });
+  const mid = new Set(o.money.map(t => t.id)); (inc.money || []).forEach(t => { if (!mid.has(t.id)) o.money.push(t); });
+  return o;
+}
+function restore(text) {
+  let inc; try { inc = JSON.parse(text); } catch (e) { return toast("That file is not a valid backup"); }
+  if (!inc || !inc.days || !inc.weeks || !inc.months || typeof inc.days !== "object") return toast("This does not look like a Yawm backup");
+  inc = normalize(inc);
+  try { localStorage.setItem(KEY + "_before_restore", JSON.stringify(data)); }
+  catch (e) { return toast("No space for a safety copy. Restore cancelled."); }
+  if (confirm("Merge this backup into your current data?\nOK = Merge (nothing is deleted)\nCancel = more options")) data = mergeData(data, inc);
+  else if (confirm("Replace ALL current data with this backup? A safety copy of your current data was kept on this device.")) data = inc;
+  else return toast("Restore cancelled. Nothing changed.");
+  save(); render(); toast("Backup restored");
+}
+
+// ================= TRACK: SLEEP + MONEY =================
+const CATS = ["Food", "Transport", "Shopping", "Education", "Gym & health", "Subscriptions", "Business tools", "Marketing", "Equipment", "Other business", "Other personal", "Income"];
+CATS.forEach(c => { const o = document.createElement("option"); o.textContent = c; $("mCat").append(o); });
+$("slDate").value = today; $("mDate").value = today; $("mCur").value = data.settings.currency;
+const hm = m => Math.floor(m / 60) + "h " + pad(m % 60) + "m";
+function sleepMin(b, w) {          // works across midnight; same time = invalid (0)
+  if (!b || !w) return 0;
+  const [bh, bm] = b.split(":").map(Number), [wh, wm] = w.split(":").map(Number);
+  let m = (wh * 60 + wm) - (bh * 60 + bm); if (m <= 0) m += 1440;
+  return m >= 1440 ? 0 : m;
+}
+const delBtn = fn => { const x = document.createElement("button"); x.className = "x"; x.textContent = "✕"; x.setAttribute("aria-label", "Delete"); x.onclick = fn; return x; };
+$("slSave").onclick = () => {
+  const m = sleepMin($("slBed").value, $("slWake").value);
+  if (!m) return toast("Enter different bedtime and wake-up times");
+  const k = $("slDate").value || today;
+  if (data.sleep[k] && !confirm("A sleep record for " + k + " exists. Replace it?")) return;
+  data.sleep[k] = { bed: $("slBed").value, wake: $("slWake").value, q: $("slQ").value, note: $("slNote").value.trim(), min: m };
+  $("slNote").value = ""; save(); render(); toast("Sleep saved");
+};
+$("mSave").onclick = () => {
+  const a = parseFloat($("mAmt").value);
+  if (!(a > 0)) return toast("Enter an amount above 0");
+  data.money.push({ id: "t" + Date.now(), date: $("mDate").value || today, type: $("mType").value, amt: Math.round(a * 100) / 100, cat: $("mCat").value, cls: $("mCls").value, pay: $("mPay").value, desc: $("mDesc").value.trim() });
+  $("mAmt").value = ""; $("mDesc").value = ""; save(); render(); toast("Saved");
+};
+$("mCur").onchange = () => { data.settings.currency = $("mCur").value; save(); render(); };
+$("mCsv").onclick = () => {
+  const q = v => { let s = String(v); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  const rows = [["Date", "Type", "Amount", "Category", "Class", "Payment", "Description"]].concat(data.money.map(t => [t.date, t.type, t.amt, t.cat, t.cls, t.pay, t.desc]));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(q).join(",")).join("\n")], { type: "text/csv" }));
+  a.download = "yawm-money-" + today + ".csv"; a.click();
+};
+function renderTrack() {
+  const keys = Object.keys(data.sleep).sort().reverse().slice(0, 7), L = $("slList"); L.innerHTML = "";
+  keys.forEach(k => {
+    const s = data.sleep[k], li = document.createElement("li"), sp = document.createElement("span");
+    sp.textContent = `${k} · ${hm(s.min)}${s.q ? " · " + s.q + "/5" : ""}`;
+    sp.onclick = () => { $("slDate").value = k; $("slBed").value = s.bed; $("slWake").value = s.wake; $("slQ").value = s.q || ""; $("slNote").value = s.note || ""; toast("Loaded. Change it, then tap Save."); };
+    li.append(sp, delBtn(() => { if (confirm("Delete sleep record for " + k + "?")) { delete data.sleep[k]; save(); render(); } }));
+    L.append(li);
+  });
+  $("slSum").textContent = keys.length ? `Average of your last ${keys.length} recorded night${keys.length > 1 ? "s" : ""}: ${hm(Math.round(keys.reduce((a, k) => a + data.sleep[k].min, 0) / keys.length))}. Tap a record to correct it.` : "No sleep recorded yet.";
+
+  const cur = data.settings.currency, mt = data.money.filter(t => t.date.startsWith(monthKey));
+  const sum = (a, f) => a.filter(f).reduce((s, t) => s + t.amt, 0);
+  const inc = sum(mt, t => t.type === "Income"), exp = sum(mt, t => t.type === "Expense"), biz = sum(mt, t => t.type === "Expense" && t.cls === "Business");
+  const tdy = sum(data.money, t => t.date === today && t.type === "Expense");
+  $("mSum").textContent = `This month: income ${cur}${inc.toFixed(2)} · spent ${cur}${exp.toFixed(2)} (business ${cur}${biz.toFixed(2)}) · net ${cur}${(inc - exp).toFixed(2)}. Today spent ${cur}${tdy.toFixed(2)}.`;
+  const by = {}; mt.filter(t => t.type === "Expense").forEach(t => by[t.cat] = (by[t.cat] || 0) + t.amt);
+  const box = $("mCats"); box.innerHTML = ""; const top = Math.max(1, ...Object.values(by));
+  Object.entries(by).sort((a, b) => b[1] - a[1]).forEach(([c, v]) => {
+    const r = document.createElement("div"); r.className = "cr"; r.innerHTML = "<span></span><i></i><b></b>";
+    r.children[0].textContent = c; r.children[1].style.width = (v / top * 100) + "%"; r.children[2].textContent = cur + v.toFixed(0); box.append(r);
+  });
+  const ML = $("mList"); ML.innerHTML = "";
+  mt.slice().reverse().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30).forEach(t => {
+    const li = document.createElement("li"), sp = document.createElement("span"), em = document.createElement("em");
+    sp.textContent = `${t.date.slice(5)} · ${t.cat} · ${t.cls}${t.desc ? " · " + t.desc : ""}`;
+    em.textContent = (t.type === "Income" ? "+" : "-") + cur + t.amt.toFixed(2);
+    li.append(sp, em, delBtn(() => { if (confirm("Delete this transaction?")) { data.money = data.money.filter(z => z.id !== t.id); save(); render(); } }));
+    ML.append(li);
+  });
+}
+function renderGlance(d) {
+  const s = data.sleep[today]; $("gSleep").textContent = s ? hm(s.min) : "—";
+  $("gSpent").textContent = data.settings.currency + data.money.filter(t => t.date === today && t.type === "Expense").reduce((a, t) => a + t.amt, 0).toFixed(0);
+  $("gFocus").textContent = d.focus;
+}
+
+// hooks used by cloud.js
+window.yawmGet = () => data;
+window.yawmSet = (o, ts) => {
+  data = normalize(o);
+  try { localStorage.setItem(KEY, JSON.stringify(data)); localStorage.setItem("yawmUpdated", ts || Date.now()); } catch (e) {}
+  render();
+};
 
 render();
