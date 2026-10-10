@@ -34,8 +34,10 @@ function normalize(o) {
   d.v = 2;
   if (!d.sleep || typeof d.sleep !== "object" || Array.isArray(d.sleep)) d.sleep = {};
   if (!Array.isArray(d.money)) d.money = [];
+  if (!Array.isArray(d.food)) d.food = [];
+  if (!Array.isArray(d.favs)) d.favs = [];
   if (!Array.isArray(d.habits)) d.habits = JSON.parse(JSON.stringify(SEED));
-  d.settings = Object.assign({ lang: "en-IN", times: {}, currency: "₹" }, d.settings);
+  d.settings = Object.assign({ lang: "en-IN", times: {}, currency: "₹", kcalTarget: 0 }, d.settings);
   if (!d.settings.times) d.settings.times = {};
   return d;
 }
@@ -145,13 +147,15 @@ function renderNext(d) {
 function renderScore() {
   const p = score(data.days[today]);
   $("pct").textContent = p; $("ring").style.strokeDashoffset = 327 * (1 - p / 100);
+  if (p === 100 && localStorage.getItem("yawmCel") !== today) { try { localStorage.setItem("yawmCel", today); } catch (e) {} toast("Day complete. Mashallah!"); }
   const n = streak(); $("streak").textContent = n ? `🔥 ${n} day${n > 1 ? "s" : ""}` : "";
 }
 let qOff = 0;
 function renderQuote() {
   const n = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
   const q = QUOTES[(n + qOff) % QUOTES.length];
-  $("qAr").textContent = q.ar; $("qEn").textContent = q.en; $("qRef").textContent = q.ref;
+  $("qAr").textContent = q.ar; $("qAr").style.display = q.ar ? "" : "none"; $("qEn").textContent = q.en; $("qRef").textContent = q.ref;
+  curQ = q; $("qFav").textContent = data.favs.includes(q.en) ? "♥" : "♡";
 }
 
 // ================= WEEK / MONTH =================
@@ -189,7 +193,7 @@ function render() {
   renderPrayers(d); renderHabits(d); renderList("taskList", d.tasks); bindText("notes", d, "notes");
   $("water").textContent = d.water;
   document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", +b.dataset.m === d.mood));
-  renderNext(d); renderScore(); renderQuote(); renderWeek(); renderMonth(); drawTimer(); renderTrack(); renderGlance(d);
+  renderNext(d); renderScore(); renderQuote(); renderWeek(); renderMonth(); drawTimer(); renderTrack(); renderGlance(d); renderFood(); renderCal(); renderFavs(); bindText("reflect", d, "reflect");
 }
 
 // ================= BUTTONS =================
@@ -209,7 +213,7 @@ document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
   document.querySelectorAll(".page").forEach(s => s.classList.add("hidden"));
   $(b.dataset.tab).classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(x => x.classList.remove("on"));
-  b.classList.add("on"); window.scrollTo(0, 0);
+  b.classList.add("on"); $("ptitle").textContent = b.lastChild.textContent; window.scrollTo(0, 0);
 });
 
 // ================= MORE: SETTINGS + BACKUP =================
@@ -326,6 +330,8 @@ function mergeData(cur, inc) {
   ["days", "weeks", "months", "sleep"].forEach(k => { o[k] = Object.assign({}, inc[k] || {}, cur[k] || {}); });
   const hid = new Set(o.habits.map(h => h.id)); (inc.habits || []).forEach(h => { if (!hid.has(h.id)) o.habits.push(h); });
   const mid = new Set(o.money.map(t => t.id)); (inc.money || []).forEach(t => { if (!mid.has(t.id)) o.money.push(t); });
+  const fid = new Set(o.food.map(t => t.id)); (inc.food || []).forEach(t => { if (!fid.has(t.id)) o.food.push(t); });
+  (inc.favs || []).forEach(q => { if (!o.favs.includes(q)) o.favs.push(q); });
   return o;
 }
 function restore(text) {
@@ -409,6 +415,126 @@ function renderGlance(d) {
   const s = data.sleep[today]; $("gSleep").textContent = s ? hm(s.min) : "—";
   $("gSpent").textContent = data.settings.currency + data.money.filter(t => t.date === today && t.type === "Expense").reduce((a, t) => a + t.amt, 0).toFixed(0);
   $("gFocus").textContent = d.focus;
+  $("gKcal").textContent = data.food.filter(e => e.date === today).reduce((a, e) => a + e.kcal, 0);
+}
+
+// ================= QUOTES: more (attributed or original), favorites =================
+[
+  { ar: "", en: "A journey of a thousand miles begins with a single step.", ref: "Lao Tzu, Tao Te Ching" },
+  { ar: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ", en: "Actions are judged by intentions.", ref: "Hadith, Bukhari & Muslim" },
+  { ar: "", en: "Small deeds done every day beat big plans never started.", ref: "Original, Yawm" },
+  { ar: "", en: "Show up today. Tomorrow's you is built from today's choices.", ref: "Original, Yawm" },
+  { ar: "", en: "Discipline is a quiet promise you keep to yourself.", ref: "Original, Yawm" }
+].forEach(q => QUOTES.push(q));
+let curQ = null;
+$("qFav").onclick = () => {
+  if (!curQ) return; const i = data.favs.indexOf(curQ.en);
+  if (i >= 0) data.favs.splice(i, 1); else data.favs.push(curQ.en);
+  save(); render();
+};
+function renderFavs() {
+  const box = $("favList"); box.innerHTML = "";
+  const L = data.favs.map(en => QUOTES.find(q => q.en === en)).filter(Boolean);
+  if (!L.length) { box.textContent = "No favorites yet. Tap ♡ on a quote."; return; }
+  L.forEach(q => { const p = document.createElement("p"); p.textContent = "“" + q.en + "” — " + q.ref; box.append(p); });
+}
+$("goCal").onclick = () => document.querySelector('nav button[data-tab="calendar"]').click();
+
+// ================= FOOD =================
+const MEALS = ["Breakfast", "Lunch", "Dinner", "Snack"], UNITS = ["portion", "piece", "g", "ml", "cup"];
+let editFood = null;
+MEALS.forEach(m => { const o = document.createElement("option"); o.textContent = m; $("fMeal").append(o); });
+UNITS.forEach(u => { const o = document.createElement("option"); o.textContent = u; $("fUnit").append(o); });
+$("fDate").value = today; $("fDate").onchange = render;
+$("fTarget").value = data.settings.kcalTarget || "";
+$("fTarget").onchange = () => { const v = parseFloat($("fTarget").value); data.settings.kcalTarget = v > 0 ? v : 0; save(); render(); };
+const dayFood = k => data.food.filter(e => e.date === k);
+function fillFood(e, edit) {
+  editFood = edit ? e.id : null;
+  $("fName").value = e.name; $("fMeal").value = e.meal; $("fUnit").value = e.unit; $("fQty").value = e.qty; $("fKcal").value = e.kin;
+  $("fBasis").value = e.basis; $("fEst").checked = !!e.est;
+  $("fP").value = e.pI ?? ""; $("fC").value = e.cI ?? ""; $("fF").value = e.fI ?? "";
+  $("fSave").textContent = edit ? "Save changes" : "Add food"; toast(edit ? "Loaded. Change it, then tap Save." : "Filled in. Set the quantity, then Add.");
+}
+$("fSave").onclick = () => {
+  const name = $("fName").value.trim(), qty = parseFloat($("fQty").value), kin = parseFloat($("fKcal").value), u = $("fUnit").value, b = $("fBasis").value;
+  if (!name) return toast("Enter a food name");
+  if (!(qty > 0)) return toast("Quantity must be above 0");
+  if (!(kin >= 0)) return toast("Enter the calories (0 or more)");
+  if (b === "100" && u !== "g" && u !== "ml") return toast("'Per 100' works with g or ml only");
+  const m = b === "100" ? qty / 100 : qty;
+  const opt = id => { const v = parseFloat($(id).value); return v >= 0 ? v : null; }, sc = v => v === null ? null : Math.round(v * m * 10) / 10;
+  const pI = opt("fP"), cI = opt("fC"), fI = opt("fF");
+  const e = { id: editFood || "f" + Date.now(), date: $("fDate").value || today, meal: $("fMeal").value, name, qty, unit: u, basis: b, kin, pI, cI, fI, kcal: Math.round(kin * m), p: sc(pI), c: sc(cI), f: sc(fI), est: $("fEst").checked };
+  const i = data.food.findIndex(z => z.id === e.id); if (i >= 0) data.food[i] = e; else data.food.push(e);
+  editFood = null; ["fName", "fQty", "fKcal", "fP", "fC", "fF"].forEach(id => $(id).value = ""); $("fEst").checked = false; $("fSave").textContent = "Add food";
+  save(); render(); toast("Food saved");
+};
+function renderFood() {
+  const k = $("fDate").value || today, L = dayFood(k), tot = L.reduce((a, e) => a + e.kcal, 0), T = data.settings.kcalTarget;
+  const mac = ["p", "c", "f"].map(x => L.reduce((a, e) => a + (e[x] || 0), 0));
+  $("fSum").textContent = `${k}: ${tot} kcal` + (T ? ` · target ${T} · ${tot <= T ? (T - tot) + " left" : (tot - T) + " over"}` : "") + (mac.some(v => v) ? ` · P ${Math.round(mac[0])}g C ${Math.round(mac[1])}g F ${Math.round(mac[2])}g (only foods with values)` : "") + (L.some(e => e.est) ? " · includes estimates" : "");
+  const box = $("fList"); box.innerHTML = "";
+  MEALS.forEach(m => {
+    const it = L.filter(e => e.meal === m); if (!it.length) return;
+    const h = document.createElement("p"); h.className = "mut"; h.textContent = `${m} · ${it.reduce((a, e) => a + e.kcal, 0)} kcal`; box.append(h);
+    const ul = document.createElement("ul");
+    it.forEach(e => {
+      const li = document.createElement("li"), sp = document.createElement("span"), em = document.createElement("em");
+      sp.textContent = `${e.name} · ${e.qty} ${e.unit}${e.est ? " (est.)" : ""}`; sp.onclick = () => fillFood(e, true); em.textContent = e.kcal + " kcal";
+      li.append(sp, em, delBtn(() => { if (confirm("Delete " + e.name + "?")) { data.food = data.food.filter(z => z.id !== e.id); save(); render(); } })); ul.append(li);
+    });
+    box.append(ul);
+  });
+  if (!L.length) { const p = document.createElement("p"); p.className = "mut"; p.textContent = "Nothing logged for this date."; box.append(p); }
+  const cnt = {}; data.food.forEach(e => { const n = e.name.toLowerCase(); (cnt[n] = cnt[n] || { n: 0 }).n++; cnt[n].e = e; });
+  const q = $("fQuick"); q.innerHTML = "";
+  Object.values(cnt).sort((a, b) => b.n - a.n).slice(0, 6).forEach(o => { const b = document.createElement("button"); b.className = "ghost sm"; b.textContent = o.e.name; b.onclick = () => fillFood(o.e, false); q.append(b); });
+  const tr = $("fTrend"); tr.innerHTML = ""; const days = []; let mx = 1;
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const f = dayFood(dateStr(d)); const v = f.length ? f.reduce((a, e) => a + e.kcal, 0) : null; if (v > mx) mx = v; days.push([d, v]); }
+  days.forEach(([d, v]) => { const c = document.createElement("div"); c.className = "bc" + (v === null ? " none" : ""); c.innerHTML = `<i style="height:${v === null ? 4 : Math.max(8, v / mx * 100)}%"></i><span>${"SMTWTFS"[d.getDay()]}</span>`; c.title = v === null ? "No food logged" : v + " kcal"; tr.append(c); });
+}
+
+// ================= CALENDAR + DAY DETAIL =================
+let calY = new Date().getFullYear(), calM = new Date().getMonth(), selDate = today;
+$("calPrev").onclick = () => { calM--; if (calM < 0) { calM = 11; calY--; } renderCal(); };
+$("calNext").onclick = () => { calM++; if (calM > 11) { calM = 0; calY++; } renderCal(); };
+function hasRec(k) {
+  const d = data.days[k];
+  return !!((d && (score(d) > 0 || d.notes || d.reflect || d.focus || d.water || d.mood)) || data.sleep[k] || data.food.some(e => e.date === k) || data.money.some(t => t.date === k));
+}
+function renderCal() {
+  $("calTitle").textContent = new Date(calY, calM, 1).toLocaleDateString("en", { month: "long", year: "numeric" });
+  const g = $("calGrid"); g.innerHTML = "";
+  "MTWTFSS".split("").forEach(c => { const h = document.createElement("small"); h.textContent = c; g.append(h); });
+  const first = (new Date(calY, calM, 1).getDay() + 6) % 7, n = new Date(calY, calM + 1, 0).getDate();
+  for (let i = 0; i < first; i++) g.append(document.createElement("span"));
+  for (let day = 1; day <= n; day++) {
+    const k = dateStr(new Date(calY, calM, day)), b = document.createElement("button"), fut = k > today, sc = score(data.days[k]);
+    b.textContent = day; b.className = "cd" + (fut ? " fut" : "") + (k === today ? " today" : "") + (k === selDate ? " sel" : "");
+    if (!fut && hasRec(k)) { b.classList.add(sc >= 80 ? "full" : "part"); b.style.setProperty("--i", (.18 + .6 * sc / 100).toFixed(2)); }
+    b.disabled = fut; b.onclick = () => { selDate = k; renderCal(); }; g.append(b);
+  }
+  renderDetail(selDate);
+}
+function renderDetail(k) {
+  const box = $("dayDetail"); box.innerHTML = "";
+  const h = document.createElement("h2"); h.textContent = new Date(k + "T00:00:00").toDateString(); box.append(h);
+  const note = t => { const p = document.createElement("p"); p.className = "mut"; p.textContent = t; box.append(p); };
+  if (k > today) return note("Future date. Nothing to show yet.");
+  if (!hasRec(k)) return note("Nothing was tracked on this day.");
+  const d = data.days[k] || {}, pr = d.prayers || {}, hb = d.habits || {}, s = data.sleep[k], fd = dayFood(k), mn = data.money.filter(t => t.date === k);
+  const row = (a, b) => { if (!b) return; const p = document.createElement("p"); p.className = "dl"; const x = document.createElement("b"); x.textContent = a; p.append(x, " " + b); box.append(p); };
+  row("Progress", score(data.days[k]) + "% (prayers, habits, tasks)");
+  row("Prayers", PRAYERS.filter(p => pr[p]).join(", ") || "none logged");
+  row("Habits", data.habits.filter(x => hb[x.id]).map(x => x.name).join(", ") || "none done");
+  row("Tasks", (d.tasks || []).map(t => (t.done ? "✓ " : "○ ") + t.text).join("; "));
+  row("Mood", d.mood ? ["", "😞", "🙁", "😐", "🙂", "😄"][d.mood] : ""); row("Water", d.water ? d.water + " glasses" : "");
+  row("Sleep", s ? hm(s.min) + (s.q ? " · quality " + s.q + "/5" : "") : "");
+  row("Food", fd.length ? fd.reduce((a, e) => a + e.kcal, 0) + " kcal" : "");
+  row("Focus", d.focus ? d.focus + " session" + (d.focus > 1 ? "s" : "") : "");
+  row("Money", mn.length ? `income ${data.settings.currency}${mn.filter(t => t.type === "Income").reduce((a, t) => a + t.amt, 0).toFixed(2)}, spent ${data.settings.currency}${mn.filter(t => t.type === "Expense").reduce((a, t) => a + t.amt, 0).toFixed(2)}` : "");
+  row("Notes", d.notes); row("Reflection", d.reflect);
 }
 
 // hooks used by cloud.js
