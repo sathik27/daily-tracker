@@ -82,3 +82,22 @@ nav button.on{background:var(--grad);color:#fff;box-shadow:0 0 18px rgba(217,70,
 #toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,20px);background:#1b0f2e;border:1px solid var(--m);padding:11px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:.3s;z-index:9;max-width:90%;text-align:center;font-size:.9rem}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 input[type=file]{color:var(--mut);width:100%}
+
+/* ===== Stage 1 theme: cinematic charcoal + violet/magenta ===== */
+:root{--bg:#07050c;--card:rgba(22,19,30,.78)}
+html,body{background:#07050c}
+body{background:radial-gradient(70% 45% at 85% 0%,rgba(168,85,247,.30),transparent 70%),radial-gradient(60% 40% at 0% 35%,rgba(217,70,239,.16),transparent 70%),radial-gradient(55% 40% at 100% 85%,rgba(79,70,229,.20),transparent 70%),linear-gradient(#07050c,#09070f)}
+.aurora{display:none}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 120px 320px at 78% 18%,rgba(192,132,252,.35),transparent 70%),radial-gradient(ellipse 220px 90px at 20% 70%,rgba(244,63,94,.12),transparent 70%);filter:blur(34px);animation:float 18s ease-in-out infinite alternate}
+@keyframes float{to{transform:translateY(24px) scale(1.06)}}
+.card{background:var(--card);border-color:rgba(255,255,255,.07);border-radius:24px}
+.pri{box-shadow:0 0 14px rgba(168,85,247,.35),inset 0 1px 0 rgba(255,255,255,.25)}
+.chip.done,.moods button.on,.bc i{box-shadow:none}
+nav{width:min(96%,480px)}nav button{font-size:.62rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.glance{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.glance div{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:12px;text-align:center}
+.glance small{display:block;color:var(--mut);font-size:.72rem;margin-bottom:4px}.glance b{font-size:1.15rem;font-weight:500}
+.cr{display:grid;grid-template-columns:96px 1fr 56px;gap:8px;align-items:center;margin:6px 0;font-size:.82rem}
+.cr i{display:block;height:8px;border-radius:99px;background:var(--grad)}.cr b{text-align:right;font-weight:500}
+li span{cursor:default;min-width:0;overflow-wrap:anywhere}
