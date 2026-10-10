@@ -32,6 +32,8 @@
     <div class="side"><h2>Today's progress</h2><p id="nextUp" class="mut"></p></div>
   </div>
 
+  <div class="glance"><div><small>Sleep</small><b id="gSleep">—</b></div><div><small>Spent today</small><b id="gSpent">0</b></div><div><small>Focus</small><b id="gFocus">0</b></div></div>
+
   <div class="card"><h2>Prayers <span id="prayerCount" class="mut"></span></h2><div id="prayers"></div></div>
 
   <div class="card"><h2>Habits</h2>
@@ -82,6 +84,32 @@
   <div class="card"><h2>What I need to fix this month</h2><div class="vw"><textarea id="monthFix" rows="5"></textarea></div></div>
 </section>
 
+<!-- TRACK -->
+<section id="track" class="page hidden">
+  <div class="card"><h2>Sleep</h2>
+    <div class="two"><label class="tl">Bedtime<input type="time" id="slBed"></label><label class="tl">Wake-up<input type="time" id="slWake"></label></div>
+    <div class="two"><label class="tl">Wake-up date<input type="date" id="slDate"></label>
+      <label class="tl">Quality<select id="slQ"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label></div>
+    <div class="vw" style="margin:10px 0"><input type="text" id="slNote" placeholder="Sleep notes (optional)" autocomplete="off"></div>
+    <button class="pri" id="slSave">Save sleep</button>
+    <p id="slSum" class="mut"></p><ul id="slList"></ul>
+  </div>
+  <div class="card"><h2>Money</h2>
+    <div class="two"><label class="tl">Type<select id="mType"><option>Expense</option><option>Income</option></select></label>
+      <label class="tl">Amount<input type="number" id="mAmt" inputmode="decimal" step="any" min="0" placeholder="0"></label></div>
+    <div class="two"><label class="tl">Category<select id="mCat"></select></label>
+      <label class="tl">Personal / Business<select id="mCls"><option>Personal</option><option>Business</option></select></label></div>
+    <div class="two"><label class="tl">Payment<select id="mPay"><option>UPI</option><option>Cash</option><option>Card</option><option>Bank</option></select></label>
+      <label class="tl">Date<input type="date" id="mDate"></label></div>
+    <div class="vw" style="margin:10px 0"><input type="text" id="mDesc" placeholder="Description (optional)" autocomplete="off"></div>
+    <button class="pri" id="mSave">Save transaction</button>
+    <p id="mSum" class="mut"></p><div id="mCats"></div><ul id="mList"></ul>
+    <div class="two" style="margin-top:12px"><button class="ghost" id="mCsv">Export CSV</button>
+      <select id="mCur" aria-label="Currency"><option>₹</option><option>$</option><option>€</option><option>£</option></select></div>
+  </div>
+  <p class="mut small">Coming in the next stages: workouts, food and calories, time tracking, history reports.</p>
+</section>
+
 <!-- FOCUS -->
 <section id="focus" class="page hidden">
   <div class="card tc">
@@ -96,6 +124,10 @@
 
 <!-- MORE -->
 <section id="more" class="page hidden">
+  <div class="card"><h2>Your data</h2>
+    <p class="mut">Saved privately on this device and browser only. It does not sync between devices, so download a backup often.</p>
+    <p id="saveState" class="mut"></p>
+  </div>
   <div class="card"><h2>Voice language</h2>
     <select id="lang"><option value="en-IN">English (India)</option><option value="en-US">English (US)</option><option value="hi-IN">Hindi</option><option value="ur-PK">Urdu</option><option value="ar-SA">Arabic</option></select>
   </div>
@@ -112,6 +144,7 @@
   <button data-tab="today" class="on"><i>☀</i>Today</button>
   <button data-tab="week"><i>◎</i>Week</button>
   <button data-tab="month"><i>▦</i>Month</button>
+  <button data-tab="track"><i>✚</i>Track</button>
   <button data-tab="focus"><i>⏱</i>Focus</button>
   <button data-tab="more"><i>⚙</i>More</button>
 </nav>
