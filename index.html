@@ -3,37 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0a0612">
+<meta name="theme-color" content="#050506">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Yawm</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%23101014'/%3E%3Cpath d='M9 8h10l6 13-5 5zM39 8H29l-6 13 5 5zM21 23h6v18h-6z' fill='%23E5092E'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#d946ef"/><stop offset="1" stop-color="#f43f5e"/></linearGradient></defs></svg>
-<div class="aurora"></div>
-
+<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff2948"/><stop offset=".6" stop-color="#e5092e"/><stop offset="1" stop-color="#780018"/></linearGradient></defs></svg>
+<div class="bg"><i class="b1"></i><i class="b2"></i></div>
 <header>
-  <div><h1>Yawm <span class="ar">يوم</span></h1><p id="date"></p></div>
+  <div class="brand"><span class="logo"><svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#101014"/><rect x=".5" y=".5" width="47" height="47" rx="12.5" fill="none" stroke="rgba(255,255,255,.12)"/><path d="M9 8h10l6 13-5 5zM39 8H29l-6 13 5 5z" fill="url(#g)"/><rect x="21" y="23" width="6" height="18" rx="2" fill="url(#g)"/></svg></span><div><h1>Yawm <span class="ar">يوم</span></h1><p id="date"></p></div></div>
   <div class="streak" id="streak"></div>
 </header>
-
 <main>
-<!-- TODAY -->
+<h2 class="ptitle" id="ptitle">Today</h2>
+
 <section id="today" class="page">
   <div class="card quote">
     <p class="qar" id="qAr"></p><p id="qEn"></p><small id="qRef"></small>
-    <button class="ghost sm" id="qNext">Next quote ↻</button>
+    <div class="qa"><button class="ghost sm" id="qFav" aria-label="Favorite">♡</button><button class="ghost sm" id="qNext">Next ↻</button></div>
   </div>
-
   <div class="card score">
     <div class="ringbox"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle class="bar" id="ring" cx="60" cy="60" r="52"/></svg>
       <div class="num"><b id="pct">0</b><small>%</small></div></div>
-    <div class="side"><h2>Today's progress</h2><p id="nextUp" class="mut"></p></div>
+    <div class="side"><h2>Today's progress</h2><p id="nextUp" class="mut"></p><p class="mut small" style="text-align:left">Counts prayers, habits and tasks.</p><button class="ghost sm" id="goCal">Calendar & history →</button></div>
   </div>
-
-  <div class="glance"><div><small>Sleep</small><b id="gSleep">—</b></div><div><small>Spent today</small><b id="gSpent">0</b></div><div><small>Focus</small><b id="gFocus">0</b></div></div>
-
+  <div class="glance"><div><small>Sleep</small><b id="gSleep">—</b></div><div><small>Calories</small><b id="gKcal">0</b></div><div><small>Spent</small><b id="gSpent">0</b></div><div><small>Focus</small><b id="gFocus">0</b></div></div>
   <div class="card"><h2>Prayers <span id="prayerCount" class="mut"></span></h2><div id="prayers"></div></div>
 
   <div class="card"><h2>Habits</h2>
@@ -58,10 +55,15 @@
   <div class="card"><h2>Daily notes</h2>
     <div class="vw"><textarea id="notes" rows="5" placeholder="Speak or type your thoughts..."></textarea></div>
   </div>
+  <div class="card"><h2>Daily reflection</h2><p class="mut">What did I learn? What do I want to improve?</p><div class="vw"><textarea id="reflect" rows="4"></textarea></div></div>
 </section>
 
-<!-- WEEK -->
-<section id="week" class="page hidden">
+<section id="calendar" class="page hidden">
+  <div class="card"><div class="calhead"><button class="ghost sm" id="calPrev" aria-label="Previous month">‹</button><h2 id="calTitle"></h2><button class="ghost sm" id="calNext" aria-label="Next month">›</button></div>
+    <div class="calgrid" id="calGrid"></div>
+    <p class="mut small">Deeper red = more of the day's prayers, habits and tasks done. Dim red = something was logged. Tap a day to see it.</p></div>
+  <div class="card" id="dayDetail"></div>
+
   <div class="card"><h2>This week</h2><div class="bars" id="weekBars"></div><p id="weekStats" class="mut"></p></div>
   <div class="card"><h2>Weekly goals</h2>
     <div class="addrow"><div class="vw"><input type="text" id="weekInput" data-add="addWeek" placeholder="Add a weekly goal" autocomplete="off"></div><button class="pri" id="addWeek">Add</button></div>
@@ -73,10 +75,7 @@
     <label>What improved?</label><div class="vw"><textarea id="improved" rows="3"></textarea></div>
     <label>What must I fix next week?</label><div class="vw"><textarea id="fix" rows="3"></textarea></div>
   </div>
-</section>
 
-<!-- MONTH -->
-<section id="month" class="page hidden">
   <div class="card"><h2>Monthly goals</h2>
     <div class="addrow"><div class="vw"><input type="text" id="monthInput" data-add="addMonth" placeholder="Add a monthly goal" autocomplete="off"></div><button class="pri" id="addMonth">Add</button></div>
     <ul id="monthGoals"></ul><p id="monthStats" class="mut"></p>
@@ -84,8 +83,7 @@
   <div class="card"><h2>What I need to fix this month</h2><div class="vw"><textarea id="monthFix" rows="5"></textarea></div></div>
 </section>
 
-<!-- TRACK -->
-<section id="track" class="page hidden">
+<section id="health" class="page hidden">
   <div class="card"><h2>Sleep</h2>
     <div class="two"><label class="tl">Bedtime<input type="time" id="slBed"></label><label class="tl">Wake-up<input type="time" id="slWake"></label></div>
     <div class="two"><label class="tl">Wake-up date<input type="date" id="slDate"></label>
@@ -94,6 +92,33 @@
     <button class="pri" id="slSave">Save sleep</button>
     <p id="slSum" class="mut"></p><ul id="slList"></ul>
   </div>
+  <div class="card"><h2>Food &amp; calories</h2>
+    <div class="two"><label class="tl">Date<input type="date" id="fDate"></label><label class="tl">Daily target (kcal)<input type="number" id="fTarget" inputmode="numeric" min="0" placeholder="optional"></label></div>
+    <p id="fSum" class="mut"></p>
+    <div class="bars mini" id="fTrend"></div>
+    <div id="fQuick" class="quick"></div>
+    <div class="vw" style="margin:10px 0"><input type="text" id="fName" placeholder="Food or drink" autocomplete="off"></div>
+    <div class="two"><label class="tl">Meal<select id="fMeal"></select></label><label class="tl">Unit<select id="fUnit"></select></label></div>
+    <div class="two"><label class="tl">Quantity<input type="number" id="fQty" inputmode="decimal" step="any" min="0" placeholder="1"></label><label class="tl">Calories<input type="number" id="fKcal" inputmode="decimal" step="any" min="0" placeholder="kcal"></label></div>
+    <div class="two"><label class="tl">Calories are<select id="fBasis"><option value="portion">per portion / unit</option><option value="100">per 100 g or ml</option></select></label><label class="tl">Estimate?<input type="checkbox" id="fEst"></label></div>
+    <div class="three"><label class="tl">Protein g<input type="number" id="fP" inputmode="decimal" step="any" min="0"></label><label class="tl">Carbs g<input type="number" id="fC" inputmode="decimal" step="any" min="0"></label><label class="tl">Fat g<input type="number" id="fF" inputmode="decimal" step="any" min="0"></label></div>
+    <button class="pri" id="fSave" style="margin-top:12px">Add food</button>
+    <div id="fList"></div>
+  </div>
+</section>
+
+<section id="focus" class="page hidden">
+  <div class="card tc">
+    <div class="modes"><button data-m="focus">Focus 25</button><button data-m="short">Break 5</button><button data-m="long">Long 15</button></div>
+    <div class="ringbox big"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle class="bar" id="tRing" cx="60" cy="60" r="52"/></svg>
+      <div class="num"><b id="tTime">25:00</b><small id="tLabel"></small></div></div>
+    <div class="ctl"><button class="ghost" id="tReset">Reset</button><button class="pri" id="tGo">Start</button><button class="ghost" id="tSkip">Skip</button></div>
+    <p id="fStats" class="mut"></p>
+  </div>
+  <div class="card"><h2>Urge to scroll?</h2><p class="mut">Don't open the app yet. Give yourself 5 minutes first.</p><button class="pri" id="urge">Start 5-minute reset</button></div>
+</section>
+
+<section id="more" class="page hidden">
   <div class="card"><h2>Money</h2>
     <div class="two"><label class="tl">Type<select id="mType"><option>Expense</option><option>Income</option></select></label>
       <label class="tl">Amount<input type="number" id="mAmt" inputmode="decimal" step="any" min="0" placeholder="0"></label></div>
@@ -107,28 +132,13 @@
     <div class="two" style="margin-top:12px"><button class="ghost" id="mCsv">Export CSV</button>
       <select id="mCur" aria-label="Currency"><option>₹</option><option>$</option><option>€</option><option>£</option></select></div>
   </div>
-  <p class="mut small">Coming in the next stages: workouts, food and calories, time tracking, history reports.</p>
-</section>
-
-<!-- FOCUS -->
-<section id="focus" class="page hidden">
-  <div class="card tc">
-    <div class="modes"><button data-m="focus">Focus 25</button><button data-m="short">Break 5</button><button data-m="long">Long 15</button></div>
-    <div class="ringbox big"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle class="bar" id="tRing" cx="60" cy="60" r="52"/></svg>
-      <div class="num"><b id="tTime">25:00</b><small id="tLabel"></small></div></div>
-    <div class="ctl"><button class="ghost" id="tReset">Reset</button><button class="pri" id="tGo">Start</button><button class="ghost" id="tSkip">Skip</button></div>
-    <p id="fStats" class="mut"></p>
-  </div>
-  <div class="card"><h2>Urge to scroll?</h2><p class="mut">Don't open the app yet. Give yourself 5 minutes first.</p><button class="pri" id="urge">Start 5-minute reset</button></div>
-</section>
-
-<!-- MORE -->
-<section id="more" class="page hidden">
+  <div class="card"><h2>Favorite quotes</h2><div id="favList" class="mut"></div></div>
   <div class="card"><h2>Your data</h2>
     <p class="mut">Saved privately on this device and browser only. It does not sync between devices, so download a backup often.</p>
     <p id="saveState" class="mut"></p>
   </div>
   <div class="card"><h2>Voice language</h2>
+    <p class="mut">Voice typing uses your browser's speech service. In Chrome, your audio is sent to Google to turn it into text. Nothing is recorded by Yawm.</p>
     <select id="lang"><option value="en-IN">English (India)</option><option value="en-US">English (US)</option><option value="hi-IN">Hindi</option><option value="ur-PK">Urdu</option><option value="ar-SA">Arabic</option></select>
   </div>
   <div class="card"><h2>Prayer times</h2><p class="mut">Set your times so Yawm can show what is next.</p><div id="ptimes"></div></div>
@@ -141,12 +151,11 @@
 </main>
 
 <nav>
-  <button data-tab="today" class="on"><i>☀</i>Today</button>
-  <button data-tab="week"><i>◎</i>Week</button>
-  <button data-tab="month"><i>▦</i>Month</button>
-  <button data-tab="track"><i>✚</i>Track</button>
-  <button data-tab="focus"><i>⏱</i>Focus</button>
-  <button data-tab="more"><i>⚙</i>More</button>
+  <button data-tab="today" class="on"><i>◉</i>Today</button>
+  <button data-tab="calendar"><i>▦</i>Calendar</button>
+  <button data-tab="health"><i>♥</i>Health</button>
+  <button data-tab="focus"><i>◔</i>Focus</button>
+  <button data-tab="more"><i>⋯</i>More</button>
 </nav>
 <div id="toast"></div>
 <script src="app.js"></script>
