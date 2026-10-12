@@ -539,6 +539,7 @@ function renderDetail(k) {
 
 // hooks used by cloud.js
 window.yawmGet = () => data;
+window.yawmMerge = (a, b) => mergeData(normalize(a), normalize(b));   // a wins on conflicts
 window.yawmSet = (o, ts) => {
   data = normalize(o);
   try { localStorage.setItem(KEY, JSON.stringify(data)); localStorage.setItem("yawmUpdated", ts || Date.now()); } catch (e) {}
