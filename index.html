@@ -119,6 +119,12 @@
 </section>
 
 <section id="more" class="page hidden">
+  <div class="card"><h2>Account &amp; cloud save</h2>
+    <p id="acct" class="mut">Not signed in. Data is only on this device.</p>
+    <button class="pri" id="signIn">Sign in with Google</button>
+    <button class="ghost hidden" id="signOut">Sign out</button>
+    <p id="syncStatus" class="mut"></p>
+  </div>
   <div class="card"><h2>Money</h2>
     <div class="two"><label class="tl">Type<select id="mType"><option>Expense</option><option>Income</option></select></label>
       <label class="tl">Amount<input type="number" id="mAmt" inputmode="decimal" step="any" min="0" placeholder="0"></label></div>
@@ -159,5 +165,6 @@
 </nav>
 <div id="toast"></div>
 <script src="app.js"></script>
+<script type="module" src="cloud.js"></script>
 </body>
 </html>
